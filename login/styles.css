@@ -340,31 +340,45 @@ input.valid {
 /* ── Requisitos de contraseña ── */
 .pwd-rules {
   list-style: none;
-  margin-top: .5rem;
+  margin-top: .6rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: .2rem .5rem;
+  gap: .3rem .5rem;
+  padding: .6rem .75rem;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
 }
 
 .pwd-rules li {
-  font-size: .75rem;
-  color: var(--text-muted);
+  font-size: .76rem;
+  color: #888;
   display: flex;
   align-items: center;
-  gap: .3rem;
-  transition: color .2s ease;
+  gap: .4rem;
+  transition: color .25s ease;
 }
 
 .pwd-rules li::before {
   content: '✕';
-  font-size: .65rem;
+  font-size: .7rem;
   color: var(--danger);
   font-weight: 700;
   flex-shrink: 0;
+  transition: color .25s ease;
+  display: inline-block;
+  width: 12px;
+  text-align: center;
 }
 
-.pwd-rules li.ok { color: var(--success); }
-.pwd-rules li.ok::before { content: '✓'; color: var(--success); }
+.pwd-rules li.ok {
+  color: var(--success);
+}
+
+.pwd-rules li.ok::before {
+  content: '✓';
+  color: var(--success);
+}
 
 /* ── Error messages ── */
 .error-msg {

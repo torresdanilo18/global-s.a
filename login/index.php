@@ -1,14 +1,27 @@
 <?php
 session_start();
 
+// ── Verificar expiración de sesión ──────────────────────────────
+if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+    if (time() > ($_SESSION['expire_at'] ?? 0)) {
+        // Sesión expirada
+        session_unset();
+        session_destroy();
+        session_start();
+        $_SESSION['login_error'] = 'Tu sesión expiró. Inicia sesión de nuevo.';
+    } else {
+        // Renovar tiempo en cada visita
+        $_SESSION['expire_at'] = time() + 20;
+    }
+}
+
 // Mensajes desde login.php
 $error   = $_SESSION['login_error']   ?? '';
 $success = $_SESSION['login_success'] ?? '';
 unset($_SESSION['login_error'], $_SESSION['login_success']);
 
-// Recordar nombre
-$remembered_nombre   = $_COOKIE['remember_nombre']   ?? '';
-$remembered_apellido = $_COOKIE['remember_apellido'] ?? '';
+// Recordar usuario
+$remembered_usuario = $_COOKIE['remember_usuario'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -47,49 +60,25 @@ $remembered_apellido = $_COOKIE['remember_apellido'] ?? '';
         ?>
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
-        <!-- Nombre y Apellido -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="nombre">Nombre</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
-                <path d="M20 21a8 8 0 1 0-16 0"/>
-              </svg>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                placeholder="Juan"
-                autocomplete="given-name"
-                value="<?= htmlspecialchars($remembered_nombre) ?>"
-                required
-              />
-            </div>
-            <span class="error-msg" id="nombreError"></span>
+        <!-- Usuario -->
+        <div class="form-group">
+          <label for="usuario">Usuario</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
+              <path d="M20 21a8 8 0 1 0-16 0"/>
+            </svg>
+            <input
+              type="text"
+              id="usuario"
+              name="usuario"
+              placeholder="mi_usuario"
+              autocomplete="username"
+              value="<?= htmlspecialchars($remembered_usuario) ?>"
+              required
+            />
           </div>
-
-          <div class="form-group">
-            <label for="apellido">Apellido</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              <input
-                type="text"
-                id="apellido"
-                name="apellido"
-                placeholder="Pérez"
-                autocomplete="family-name"
-                value="<?= htmlspecialchars($remembered_apellido) ?>"
-                required
-              />
-            </div>
-            <span class="error-msg" id="apellidoError"></span>
-          </div>
+          <span class="error-msg" id="usuarioError"></span>
         </div>
 
         <!-- Password -->
@@ -125,10 +114,10 @@ $remembered_apellido = $_COOKIE['remember_apellido'] ?? '';
           </div>
           <!-- Requisitos -->
           <ul class="pwd-rules" id="pwdRules">
-            <li id="r-len">Maximo 8 caracteres</li>
-            <li id="r-upper">Una mayúscula</li>
-            <li id="r-lower">Una minúscula</li>
-            <li id="r-num">Un número</li>
+            <li id="r-len">Mínimo 8 caracteres</li>
+            <li id="r-upper">Una mayúscula (A-Z)</li>
+            <li id="r-lower">Una minúscula (a-z)</li>
+            <li id="r-num">Un número (0-9)</li>
             <li id="r-sym">Un símbolo (!@#$...)</li>
           </ul>
         </div>
@@ -148,7 +137,7 @@ $remembered_apellido = $_COOKIE['remember_apellido'] ?? '';
         <div class="form-options">
           <label class="checkbox-label">
             <input type="checkbox" id="remember" name="remember"
-              <?= $remembered_nombre ? 'checked' : '' ?> />
+              <?= $remembered_usuario ? 'checked' : '' ?> />
             <span class="checkmark"></span>
             Recordarme
           </label>
@@ -201,5 +190,8 @@ $remembered_apellido = $_COOKIE['remember_apellido'] ?? '';
   <?php endif; ?>
 
   <script src="login.js"></script>
+  <?php if (!empty($_SESSION['logged_in'])): ?>
+  <script src="inactivity.js"></script>
+  <?php endif; ?>
 </body>
 </html>

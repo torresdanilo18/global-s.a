@@ -17,8 +17,7 @@ function onCaptchaExpired() {
 
 // ── DOM ─────────────────────────────────────────────────────────
 const form          = document.getElementById('loginForm');
-const nombreInput   = document.getElementById('nombre');
-const apellidoInput = document.getElementById('apellido');
+const usuarioInput  = document.getElementById('usuario');
 const passwordInput = document.getElementById('password');
 const toggleBtn     = document.getElementById('togglePassword');
 const eyeIcon       = document.getElementById('eyeIcon');
@@ -59,29 +58,16 @@ function clearState(input, errorEl) {
   errorEl.textContent = '';
 }
 
-function validateNombre() {
-  const errorEl = document.getElementById('nombreError');
-  const value   = nombreInput.value.trim();
-  if (!value) { setError(nombreInput, errorEl, 'El nombre es obligatorio.'); return false; }
-  if (value.length < 2) { setError(nombreInput, errorEl, 'Mínimo 2 caracteres.'); return false; }
-  if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]+$/u.test(value)) {
-    setError(nombreInput, errorEl, 'Solo se permiten letras.');
+function validateUsuario() {
+  const errorEl = document.getElementById('usuarioError');
+  const value   = usuarioInput.value.trim();
+  if (!value) { setError(usuarioInput, errorEl, 'El usuario es obligatorio.'); return false; }
+  if (value.length < 3) { setError(usuarioInput, errorEl, 'Mínimo 3 caracteres.'); return false; }
+  if (!/^[a-zA-Z0-9_.\-]+$/.test(value)) {
+    setError(usuarioInput, errorEl, 'Solo letras, números, _ . -');
     return false;
   }
-  setValid(nombreInput, errorEl);
-  return true;
-}
-
-function validateApellido() {
-  const errorEl = document.getElementById('apellidoError');
-  const value   = apellidoInput.value.trim();
-  if (!value) { setError(apellidoInput, errorEl, 'El apellido es obligatorio.'); return false; }
-  if (value.length < 2) { setError(apellidoInput, errorEl, 'Mínimo 2 caracteres.'); return false; }
-  if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]+$/u.test(value)) {
-    setError(apellidoInput, errorEl, 'Solo se permiten letras.');
-    return false;
-  }
-  setValid(apellidoInput, errorEl);
+  setValid(usuarioInput, errorEl);
   return true;
 }
 
@@ -165,11 +151,10 @@ passwordInput.addEventListener('input', () => {
 });
 
 // ── Validación en tiempo real ───────────────────────────────────
-nombreInput.addEventListener('blur',   () => { if (nombreInput.value)   validateNombre(); });
-apellidoInput.addEventListener('blur', () => { if (apellidoInput.value) validateApellido(); });
+usuarioInput.addEventListener('blur',  () => { if (usuarioInput.value)  validateUsuario(); });
 passwordInput.addEventListener('blur', () => { if (passwordInput.value) validatePassword(); });
 
-[nombreInput, apellidoInput, passwordInput].forEach(input => {
+[usuarioInput].forEach(input => {
   input.addEventListener('input', () => {
     const el = document.getElementById(input.id + 'Error');
     if (el && input.classList.contains('invalid')) clearState(input, el);
@@ -178,12 +163,11 @@ passwordInput.addEventListener('blur', () => { if (passwordInput.value) validate
 
 // ── Envío: validar antes de dejar que PHP procese ───────────────
 form.addEventListener('submit', (e) => {
-  const okNombre   = validateNombre();
-  const okApellido = validateApellido();
+  const okUsuario  = validateUsuario();
   const okPassword = validatePassword();
   const okCaptcha  = validateCaptcha();
 
-  if (!okNombre || !okApellido || !okPassword || !okCaptcha) {
+  if (!okUsuario || !okPassword || !okCaptcha) {
     e.preventDefault();
     return;
   }
